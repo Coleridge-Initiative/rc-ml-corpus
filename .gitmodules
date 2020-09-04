@@ -10,3 +10,6 @@
 [submodule "publications"]
 	path = publications
 	url = https://github.com/Coleridge-Initiative/RCPublications.git
+[submodule "adrf-onto"]
+	path = adrf-onto
+	url = https://github.com/Coleridge-Initiative/adrf-onto.git
