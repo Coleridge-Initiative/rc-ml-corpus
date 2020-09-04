@@ -1,7 +1,15 @@
+import argparse
+import sys
+import os
 import requests
 import pandas as pd
 from pathlib import Path
+
 from publications.scripts import publications_export_template
+
+# this avoids an exception when importing run_author,run_final,gen_ttl
+sys.path.append(str(Path(__file__).parent / "rcgraph"))
+from rcgraph import run_author , run_final, gen_ttl
 
 NOAA_COLUMNS = ['PID', 'mods.title', 'mods.abstract',
                   'mods.type_of_resource',
@@ -109,14 +117,71 @@ def get_NOAA_corpus_metadata():
     noaa_corpus_df.to_csv(NOAA_CORPUS_OUTPUT_FILENAME, index=False)
 
 
+def prepare_context_for_rc_scripts():
+    # this method prepares the arguments rcgraph scripts need and
+    # overrides some constants to avoid creating files inside the submodules structure
 
-def main():
+    parser = argparse.ArgumentParser(
+        # description="reconcile the journal and ISSN for each publication"
+    )
+    parser.add_argument(
+        "--partition",
+        type=str,
+        default="20200831_noaa_corpus_publications.json",
+        help="limit processing to a specified partition"
+    )
+    parser.add_argument(
+        "--force",
+        type=bool,
+        default=False,
+        help="force re-generating the author entities from scratch"
+    )
 
-    get_NOAA_corpus_metadata()
+    parser.add_argument(
+        "--full_graph",
+        type=bool,
+        default=True,
+        help="generate the full graph, not just the open source subset"
+    )
 
-    # transform the csv file into a json file that can be processed by RCGraph code
-    publications_export_template.export(Path("noaa_corpus.csv"), "datasets/datasets.json", "./",
-                                        "20200831_noaa_corpus_publications.json")
+    # change working directory so rcgraph scripts find some required files
+    os.chdir("rcgraph")
+
+    # overrides some constants to avoid creating files inside the submodules structure
+
+    # run_step4.rc_graph.RCGraph.BUCKET_STAGE = (Path(__file__).parent / "bucket_stage" )
+    run_author.rc_graph.RCGraph.BUCKET_STAGE = (Path(__file__).parent / "bucket_stage")
+    run_final.rc_graph.RCGraph.BUCKET_STAGE = (Path(__file__).parent / "bucket_stage")
+    run_final.rc_graph.RCGraph.BUCKET_FINAL = (Path(__file__).parent / "bucket_final")
+    gen_ttl.rc_graph.RCGraph.BUCKET_FINAL = (Path(__file__).parent / "bucket_final")
+    gen_ttl.rc_graph.RCGraph.PATH_DATASETS = (Path(__file__).parent / "datasets/datasets.json")
+    gen_ttl.rc_graph.RCGraph.PATH_PROVIDERS = (Path(__file__).parent / "datasets/providers.json")
+    gen_ttl.PATH_CORPUS_TTL = (Path(__file__).parent / "corpus.ttl")
+    gen_ttl.PATH_SKOSIFY_CFG = (Path(__file__).parent / "adrf-onto/skosify.cfg")
+    gen_ttl.PATH_ADRF_TTL = (Path(__file__).parent / "adrf-onto/adrf.ttl")
+
+    return parser
+
+
+def gen_corpus_jsonld():
+    parser = prepare_context_for_rc_scripts()
+    run_author.main(parser.parse_args())
+    run_final.main(parser.parse_args())
+    gen_ttl.main(parser.parse_args())
+    os.replace("./corpus.jsonld","./../corpus.jsonld")
+
+
+def main(pull_noaa_corpus_metadata = False):
+
+    if pull_noaa_corpus_metadata:
+        get_NOAA_corpus_metadata()
+
+        # transform the csv file into a json file that can be processed by RCGraph code
+        publications_export_template.export(Path("noaa_corpus.csv"), "datasets/datasets.json", "./",
+                                            "bucket_stage/20200831_noaa_corpus_publications.json")
+
+    gen_corpus_jsonld()
+
 
 if __name__ == '__main__':
     # This code is based on NOAA API documentation https://github.com/NOAA-Central-Library-NCL/NOAA_IR
@@ -126,4 +191,6 @@ if __name__ == '__main__':
     # - Download all the endpoint's documents metadata
     # - Extract useful columns that are present in all endpoints
     # - Deduplicate entries
-    main()
+
+    pull_noaa_corpus_metadata = False
+    main(pull_noaa_corpus_metadata)
