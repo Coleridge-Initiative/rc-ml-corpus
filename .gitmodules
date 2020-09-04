@@ -1,0 +1,12 @@
+[submodule "datasets"]
+	path = datasets
+	url = https://github.com/Coleridge-Initiative/RCDatasets.git
+[submodule "rclc"]
+	path = rclc
+	url = https://github.com/Coleridge-Initiative/rclc.git
+[submodule "rcgraph"]
+	path = rcgraph
+	url = https://github.com/Coleridge-Initiative/RCGraph.git
+[submodule "publications"]
+	path = publications
+	url = https://github.com/Coleridge-Initiative/RCPublications.git
