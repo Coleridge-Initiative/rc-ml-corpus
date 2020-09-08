@@ -105,8 +105,9 @@ def get_NOAA_corpus_metadata():
                             noaa_corpus_df['noaa_pid'] + "_DS1.pdf"
 
 
-    # TODO: ***WARNING*** this is not true
-    noaa_corpus_df['dataset'] = "dataset-610"  # TODO: placeholder
+    print("**WARNING**")
+    print("Using a placeholder for the dataset, needed for reusing existing code")
+    noaa_corpus_df['dataset'] = "dataset-000"  # TODO: placeholder
 
     # deduplicate results. According to NOAA documentation a document might be present in more than one endpoint
     print("Unique document PID values:", noaa_corpus_df.PID.nunique())
@@ -154,9 +155,9 @@ def prepare_context_for_rc_scripts():
     run_final.rc_graph.RCGraph.BUCKET_STAGE = (Path(__file__).parent / "bucket_stage")
     run_final.rc_graph.RCGraph.BUCKET_FINAL = (Path(__file__).parent / "bucket_final")
     gen_ttl.rc_graph.RCGraph.BUCKET_FINAL = (Path(__file__).parent / "bucket_final")
-    gen_ttl.rc_graph.RCGraph.PATH_DATASETS = (Path(__file__).parent / "datasets/datasets.json")
-    gen_ttl.rc_graph.RCGraph.PATH_PROVIDERS = (Path(__file__).parent / "datasets/providers.json")
-    gen_ttl.PATH_CORPUS_TTL = (Path(__file__).parent / "corpus.ttl")
+    gen_ttl.rc_graph.RCGraph.PATH_DATASETS = (Path(__file__).parent / "corpus/unknown_dataset.json")
+    gen_ttl.rc_graph.RCGraph.PATH_PROVIDERS = (Path(__file__).parent / "corpus/unknown_provider.json")
+    gen_ttl.PATH_CORPUS_TTL = (Path(__file__).parent / "corpus/corpus.ttl")
     gen_ttl.PATH_SKOSIFY_CFG = (Path(__file__).parent / "adrf-onto/skosify.cfg")
     gen_ttl.PATH_ADRF_TTL = (Path(__file__).parent / "adrf-onto/adrf.ttl")
 
@@ -168,7 +169,7 @@ def gen_corpus_jsonld():
     run_author.main(parser.parse_args())
     run_final.main(parser.parse_args())
     gen_ttl.main(parser.parse_args())
-    os.replace("./corpus.jsonld","./../corpus.jsonld")
+    os.replace("./corpus.jsonld","./../corpus/corpus.jsonld")
 
 
 def main(pull_noaa_corpus_metadata = False):
@@ -177,7 +178,7 @@ def main(pull_noaa_corpus_metadata = False):
         get_NOAA_corpus_metadata()
 
         # transform the csv file into a json file that can be processed by RCGraph code
-        publications_export_template.export(Path("noaa_corpus.csv"), "datasets/datasets.json", "./",
+        publications_export_template.export(Path("noaa_corpus.csv"), "corpus/unknown_dataset.json", "./",
                                             "bucket_stage/20200831_noaa_corpus_publications.json")
 
     gen_corpus_jsonld()
@@ -191,6 +192,8 @@ if __name__ == '__main__':
     # - Download all the endpoint's documents metadata
     # - Extract useful columns that are present in all endpoints
     # - Deduplicate entries
+    # - Saves as csv file
+    # - Reuses RCGraph code to generate a corpus.jsonld file with the publications url to download the PDFs
 
     pull_noaa_corpus_metadata = False
     main(pull_noaa_corpus_metadata)
