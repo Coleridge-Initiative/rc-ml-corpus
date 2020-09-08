@@ -5,11 +5,14 @@ import requests
 import pandas as pd
 from pathlib import Path
 
+# the following imports are for reusing existing RC scripts
 from publications.scripts import publications_export_template
 
 # this avoids an exception when importing run_author,run_final,gen_ttl
 sys.path.append(str(Path(__file__).parent / "rcgraph"))
 from rcgraph import run_author , run_final, gen_ttl
+
+from rclc.bin import download_resources
 
 NOAA_COLUMNS = ['PID', 'mods.title', 'mods.abstract',
                   'mods.type_of_resource',
@@ -171,6 +174,52 @@ def gen_corpus_jsonld():
     gen_ttl.main(parser.parse_args())
     os.replace("./corpus.jsonld","./../corpus/corpus.jsonld")
 
+def download_pdf_files():
+
+    parser = argparse.ArgumentParser(
+        description="download publication PDFs and dataset foaf pages for the rclc corpus"
+    )
+    parser.add_argument(
+        "--logger",
+        type=str,
+        default=download_resources.DEFAULT_LOGGER_FILE,
+        help="logger file"
+    )
+    parser.add_argument(
+        "--input",
+        type=str,
+        #default=download_resources.DEFAULT_CORPUS_FILE,
+        default=(Path(__file__).parent / "corpus/corpus.jsonld"),
+        help="rclc corpus file"
+    )
+    parser.add_argument(
+        "--todo",
+        type=str,
+        default=download_resources.DEFAULT_TODO_LIST,
+        help="download todo file"
+    )
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        default=download_resources.DEFAULT_OUTPUT_RESOURCE,
+        help="path to store downloaded resources"
+    )
+
+    parser.add_argument(
+        "--force",
+        type=bool,
+        default=download_resources.DEFAULT_FORCE_DOWNLOAD,
+        help="always download resources"
+    )
+
+    download_resources.DEFAULT_TODO_FILE = (Path(__file__).parent / "corpus/todo.tsv")
+    download_resources.DEFAULT_OUTPUT_RESOURCE = (Path(__file__).parent / "corpus/resources/")
+
+    # change working directory so rcgraph scripts find some required files
+    os.chdir((Path(__file__).parent / "corpus"))
+
+    download_resources.main(parser.parse_args())
+
 
 def main(pull_noaa_corpus_metadata = False):
 
@@ -182,6 +231,8 @@ def main(pull_noaa_corpus_metadata = False):
                                             "bucket_stage/20200831_noaa_corpus_publications.json")
 
     gen_corpus_jsonld()
+
+    download_pdf_files()
 
 
 if __name__ == '__main__':
