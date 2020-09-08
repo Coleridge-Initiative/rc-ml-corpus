@@ -25,6 +25,11 @@ NOAA_API_VIEW_URL = "https://repository.library.noaa.gov/fedora/export/view/coll
 
 NOAA_CORPUS_OUTPUT_FILENAME = "noaa_corpus.csv"
 
+DEFAULT_SKIP_METADATA_PULL = False
+DEFAULT_SKIP_GEN_CORPUS_FILE = False
+DEFAULT_SKIP_DOWNLOAD = False
+DEFAULT_FORCE_DOWNLOAD = False
+
 def cleanup_PID(value):
     try:
         # remove noaa: prefix
@@ -174,7 +179,7 @@ def gen_corpus_jsonld():
     gen_ttl.main(parser.parse_args())
     os.replace("./corpus.jsonld","./../corpus/corpus.jsonld")
 
-def download_pdf_files():
+def download_pdf_files(force_download):
 
     parser = argparse.ArgumentParser(
         description="download publication PDFs and dataset foaf pages for the rclc corpus"
@@ -208,31 +213,42 @@ def download_pdf_files():
     parser.add_argument(
         "--force",
         type=bool,
-        default=download_resources.DEFAULT_FORCE_DOWNLOAD,
+        default=force_download,
         help="always download resources"
     )
+
+    if force_download:
+        print("Forcing download of files if they alredy have been dowloaded...")
 
     download_resources.DEFAULT_TODO_FILE = (Path(__file__).parent / "corpus/todo.tsv")
     download_resources.DEFAULT_OUTPUT_RESOURCE = (Path(__file__).parent / "corpus/resources/")
 
-    # change working directory so rcgraph scripts find some required files
+    # change working directory so the downloaed PDF files get stored in corpus/resources folder
     os.chdir((Path(__file__).parent / "corpus"))
 
     download_resources.main(parser.parse_args())
 
 
-def main(pull_noaa_corpus_metadata = False):
+def main(args):
 
-    if pull_noaa_corpus_metadata:
+    if args.skip_metadata_pull:
+        print("Skipping metadata pull using NOAA IR API")
+    else:
         get_NOAA_corpus_metadata()
 
         # transform the csv file into a json file that can be processed by RCGraph code
         publications_export_template.export(Path("noaa_corpus.csv"), "corpus/unknown_dataset.json", "./",
                                             "bucket_stage/20200831_noaa_corpus_publications.json")
 
-    gen_corpus_jsonld()
+    if args.skip_gen_corpus_file:
+        print("Skipping generating corpus.jsonld")
+    else:
+        gen_corpus_jsonld()
 
-    download_pdf_files()
+    if args.skip_download:
+        print("Skipping PDF downloads")
+    else:
+        download_pdf_files(args.force_download)
 
 
 if __name__ == '__main__':
@@ -245,6 +261,41 @@ if __name__ == '__main__':
     # - Deduplicate entries
     # - Saves as csv file
     # - Reuses RCGraph code to generate a corpus.jsonld file with the publications url to download the PDFs
+    # - Reuses rclc code to download PDF files
 
     pull_noaa_corpus_metadata = False
-    main(pull_noaa_corpus_metadata)
+
+    # parse the command line arguments, if any
+    parser = argparse.ArgumentParser(
+        description="download NOAA corpus PDF files"
+        )
+
+    parser.add_argument(
+        "--skip_metadata_pull",
+        action="store_true",
+        default=DEFAULT_SKIP_METADATA_PULL,
+        help="Don't make API calls to institutional repository."
+        )
+
+    parser.add_argument(
+        "--skip_gen_corpus_file",
+        action="store_true",
+        default=DEFAULT_SKIP_GEN_CORPUS_FILE,
+        help="Don't create corpus.jsonld."
+        )
+
+    parser.add_argument(
+        "--skip_download",
+        action="store_true",
+        default=DEFAULT_SKIP_DOWNLOAD,
+        help="Don't download resources files"
+        )
+
+    parser.add_argument(
+        "--force_download",
+        action="store_true",
+        default=DEFAULT_FORCE_DOWNLOAD,
+        help="Always download resources, even if files already present."
+        )
+
+    main(parser.parse_args())
