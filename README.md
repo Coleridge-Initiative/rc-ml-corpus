@@ -38,7 +38,6 @@ python create_noaa_ir_corpus.py -h
  
  In step 1, the script will pull the documents metadata from all the collections and then deduplicate them, since one document could be present in more than one collection/endpoint. It will generate a csv file with the documents metadata (eg NOAA id, title, doi, etc) and a programmatically generated URL pointing to the PDF files in the NOAA IR.
  
- In step 2, the script will reuse code from RCGraph to generate a corpus.jsonld file. The file might have additional entities when compared with the one published originally in [https://github.com/Coleridge-Initiative/rclc][RCLC]  
+ In step 2, the script will reuse code from RCGraph to generate a `corpus.jsonld` file. The file might have additional entities when compared with the one published originally in 
+[RCLC](https://github.com/Coleridge-Initiative/rclc). It initially will contain a placeholder for the dataset links.
 
-
-[]: https://github.com/Coleridge-Initiative/rclc
