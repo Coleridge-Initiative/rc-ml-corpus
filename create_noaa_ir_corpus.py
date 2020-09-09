@@ -261,9 +261,9 @@ if __name__ == '__main__':
     # - Deduplicate entries
     # - Saves as csv file
     # - Reuses RCGraph code to generate a corpus.jsonld file with the publications url to download the PDFs
-    # - Reuses rclc code to download PDF files
+    # - Reuses rclc code to download PDF files. Will store the files in subdirectory corpus/resources/pub/pdf
 
-    pull_noaa_corpus_metadata = False
+    # Example: python create_noaa_ir_corpus.py --skip_download
 
     # parse the command line arguments, if any
     parser = argparse.ArgumentParser(
@@ -297,5 +297,6 @@ if __name__ == '__main__':
         default=DEFAULT_FORCE_DOWNLOAD,
         help="Always download resources, even if files already present."
         )
+
 
     main(parser.parse_args())
