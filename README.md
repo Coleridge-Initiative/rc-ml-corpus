@@ -55,3 +55,6 @@ First, you need to have your .aws directory configured with valid keys, etc., fo
 
 Then adapt the rclc/bin/download_s3.py script as example code to download the PDF files (open access publications), and TXT files (raw extracted text) from the public S3 bucket. You will need to modify or adapt that code. For now we are not providing structured JSON files for these corpora.
 
+You will find missing files in the S3 bucket. There are two reasons why a publication present in `corpus.jsonld` file might not have the corresponding .txt file uploaded in the S3 bucket:
+1. The PDF file of that publication failed to be retrieved from the NOAA Institutional Repository -a few files are missing there
+2. The pdf-to-text tool could not process the PDF file.
