@@ -47,14 +47,14 @@ In step 3, the script will try to download all the PDF files present in corpus.j
 
 Since the download and pdf-to-text conversion will take a significant time for bigger corpora we are making both PDF and TXT files available in a S3 bucket named `richcontext`.
 
-Please, note that the S3 bucket will contain more files than just the current corpus. You need to use `corpus.jsonld` file as an index. You will see that the entries in that file of type ResearchPublication has an id that matches those files in the S3 bucket.
-
-###### Example: for this entry in corpus.jsonld file, `"@id": "https://github.com/Coleridge-Initiative/adrf-onto/wiki/Vocabulary#publication-f23cafe87a6977199527"`, the corresponding filenames will be `f23cafe87a6977199527.pdf` and `f23cafe87a6977199527.pdf.txt` 
-
 First, you need to have your .aws directory configured with valid keys, etc., for S3 access before the following script will work. The bucket is readable by the public, even so the boto3 library for requires keys for a valid AWS user account.
 
 Then adapt the rclc/bin/download_s3.py script as example code to download the PDF files (open access publications), and TXT files (raw extracted text) from the public S3 bucket. You will need to modify or adapt that code. For now we are not providing structured JSON files for these corpora.
 
-You will find missing files in the S3 bucket. There are two reasons why a publication present in `corpus.jsonld` file might not have the corresponding .txt file uploaded in the S3 bucket:
+Please, note that the S3 bucket will contain **more files than just the current corpus**. You need to use `corpus.jsonld` file as an index. You will see that the entries in that file of type ResearchPublication has an id that matches those files in the S3 bucket.
+
+###### Example: for this entry in corpus.jsonld file, `"@id": "https://github.com/Coleridge-Initiative/adrf-onto/wiki/Vocabulary#publication-f23cafe87a6977199527"`, the corresponding filenames will be `f23cafe87a6977199527.pdf` and `f23cafe87a6977199527.pdf.txt` 
+
+On the other hand, not all documents present in `corpus.jsonld` file will be present in the S3 bucket. There are two reasons why a publication present in `corpus.jsonld` file might not have the corresponding .txt file uploaded in the S3 bucket:
 1. The PDF file of that publication failed to be retrieved from the NOAA Institutional Repository -a few files are missing there
 2. The pdf-to-text tool could not process the PDF file.
