@@ -43,5 +43,15 @@ python create_noaa_ir_corpus.py -h
 
 In step 3, the script will try to download all the PDF files present in corpus.jsonld file. It will save them into the subdirectory corpus/pub/pdf. The download script will make 3 attemps by default. A few NOAA documents will fail to be downloaded. If the download is interrupted, the script will pick up where it left, preventing downloading again files already present in corpus/pub/pdf.
 
+### Corpus available in S3 bucket
 
+Since the download and pdf-to-text conversion will take a significant time for bigger corpora we are making both PDF and TXT files available in a S3 bucket named `richcontext`.
+
+Please, note that the S3 bucket will contain more files than just the current corpus. You need to use `corpus.jsonld` file as an index. You will see that the entries in that file of type ResearchPublication has an id that matches those files in the S3 bucket.
+
+###### Example: for this entry in corpus.jsonld file, `"@id": "https://github.com/Coleridge-Initiative/adrf-onto/wiki/Vocabulary#publication-f23cafe87a6977199527"`, the corresponding filenames will be `f23cafe87a6977199527.pdf` and `f23cafe87a6977199527.pdf.txt` 
+
+First, you need to have your .aws directory configured with valid keys, etc., for S3 access before the following script will work. The bucket is readable by the public, even so the boto3 library for requires keys for a valid AWS user account.
+
+Then adapt the rclc/bin/download_s3.py script as example code to download the PDF files (open access publications), and TXT files (raw extracted text) from the public S3 bucket. You will need to modify or adapt that code. For now we are not providing structured JSON files for these corpora.
 
