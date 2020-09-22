@@ -181,6 +181,10 @@ def gen_corpus_jsonld():
 
 def download_pdf_files(force_download):
 
+    download_resources.DEFAULT_TODO_FILE = (Path(__file__).parent / "corpus/todo_default.tsv")
+    download_resources.DEFAULT_TODO_LIST = (Path(__file__).parent / "corpus/todo_usda.tsv")
+    download_resources.DEFAULT_OUTPUT_RESOURCE = (Path(__file__).parent / "corpus/resources/")
+
     parser = argparse.ArgumentParser(
         description="download publication PDFs and dataset foaf pages for the rclc corpus"
     )
@@ -217,11 +221,40 @@ def download_pdf_files(force_download):
         help="always download resources"
     )
 
+
+    # TODO fix this
+    parser.add_argument(
+        "--skip_metadata_pull",
+        action="store_true",
+        default=DEFAULT_SKIP_METADATA_PULL,
+        help="Don't make API calls to institutional repository."
+    )
+
+    parser.add_argument(
+        "--skip_gen_corpus_file",
+        action="store_true",
+        default=DEFAULT_SKIP_GEN_CORPUS_FILE,
+        help="Don't create corpus.jsonld."
+    )
+
+    parser.add_argument(
+        "--skip_download",
+        action="store_true",
+        default=DEFAULT_SKIP_DOWNLOAD,
+        help="Don't download resources files"
+    )
+
+    parser.add_argument(
+        "--force_download",
+        action="store_true",
+        default=DEFAULT_FORCE_DOWNLOAD,
+        help="Always download resources, even if files already present."
+    )
+
     if force_download:
         print("Forcing download of files if they alredy have been dowloaded...")
 
-    download_resources.DEFAULT_TODO_FILE = (Path(__file__).parent / "corpus/todo.tsv")
-    download_resources.DEFAULT_OUTPUT_RESOURCE = (Path(__file__).parent / "corpus/resources/")
+
 
     # change working directory so the downloaed PDF files get stored in corpus/resources folder
     os.chdir((Path(__file__).parent / "corpus"))
